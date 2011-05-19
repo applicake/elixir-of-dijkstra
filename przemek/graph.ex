@@ -1,24 +1,26 @@
 object Graph
 	def initialize()
-		g = {:}
-		d = {:}
-		nodes = Set.new()
-		max_int = Erlang.bsl(1,32)
+		g = {:} %% graph representation, adjacency list equivalent -- dictionary of dictionaries
+		d = {:} %% distances
+		max_int = Erlang.bsl(1,32) %% maximal distance value -- local infinity 
 		
-		@('g: g, 'd: d, 'nodes: nodes, 'max_int: max_int)
+		@('g: g, 'd: d, 'max_int: max_int)
 	end
 	def setup()
 		g = {'s: {'t: 10, 'y: 5}, 't: {'x: 1, 'y: 2}, 'x: {'z: 4}, 'y: {'t: 3, 'x: 9, 'z: 2}, 'z: {'s: 7, 'x: 6}}
 		d = {'s: 4294967296, 't: 4294967296, 'x: 4294967296, 'y: 4294967296, 'z: 4294967296}
-		nodes = Set.from_list(['s, 't, 'x, 'y, 'z])
 		max_int = 4294967296
-		@('g: g, 'nodes: nodes, 'max_int: max_int, 'd: d)
+		@('g: g, 'd: d, 'max_int: max_int)
 	end
 	
+	def g; @g; end
+	def d; @d; end
+	def max_int; @max_int; end
+	
+	%% add_edge -- add edge to graph
 	def add_edge(s,t,w)
 		g = @g
 		d = @d
-		nodes = @nodes
 		
 		if g[s] == nil
 			g = g.merge {s:{t:w}}
@@ -31,43 +33,48 @@ object Graph
 		if d[t] == nil
 			d = d.merge {t: @max_int}
 		end
-		if nodes.include?(s) == false
-			nodes = nodes.add(s)
-		end
-		if nodes.include?(t) == false
-			nodes = nodes.add(t)
-		end
-		@('g: g, 'd: d, 'nodes: nodes)
+		@('g: g, 'd: d)
 	end
 	
+	%% dijkstra -- execute dijkstra algorithm
 	def dijkstra(point)
 		d = @d
-		s = Set.new()
-		q = Erlang.gb_trees.from_orddict(@d.to_list)
+		q = listf(d.to_list)
 		d = d.set(point, 0)
-		loop(s, q, d)
+		loop(q, d)
 	end
 	
-	private
-	
-		def extract_min(q, d)
-			it = Erlang.gb_trees.iterator(q)
-			{key, _value, it} = Erlang.gb_trees.next(it)
-			get_min(key, it, d)
+%% private
+%% commented for tests
+		%% listf -- get list of first elements from list of pairs [{a,b}, {c,d}] -> [a,c]
+		def listf([])
+			[]
+		end
+		def listf([a])
+			{first, _second} = a
+			[first]
+		end
+		def listf([h|t])
+			{first, _second} = h
+			[first | listf(t)]
+		end
+		%% extract_min -- extract element from list with the shortest distance
+		def extract_min([], _d, key)
+			key
 		end
 		
-		def get_min(min_key, [], d)
-			{min_key, d[min_key]}
-		end
-		
-		def get_min(min_key, it, d)
-			{key, _value, it} = Erlang.gb_trees.next(it)
-			if d[key] < d[min_key]
-				min_key = key
+		def extract_min([h|t], d, key)
+			if d[h] < d[key]
+				extract_min(t, d, h)
+			else
+				extract_min(t, d, key)
 			end
-			get_min(min_key, it, d)
 		end
 		
+		def extract_min(q, d)
+			extract_min(q, d, q[0])
+		end
+		%% relax -- relaxation
 		def relax(_u, [], d)
 			d
 		end
@@ -80,19 +87,17 @@ object Graph
 			relax(u, t, d)
 		end
 		
-		def inloop(s, q, d)
+		def inloop(q, d)
 			g = @g
-			{u, _min} = extract_min(q, d)
-			q = Erlang.gb_trees.delete(u, q)
-			IO.puts q.to_list
-			s = s.add(u)
+			u = extract_min(q, d)
+			q = q.delete(u)
 			d = relax(u, g[u].to_list, d)
-			loop(s, q, d)
+			loop(q, d)
 		end
 		
-		def loop(s, q, d)
-			if Erlang.gb_trees.is_empty(q) == false
-				d = inloop(s, q, d)
+		def loop(q, d)
+			if q.length > 0
+				d = inloop(q, d)
 			end
 			d
 		end

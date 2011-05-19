@@ -9,8 +9,9 @@ g = g.add_edge('y, 'x, 9)
 g = g.add_edge('y, 'z, 2)
 g = g.add_edge('z, 's, 7)
 g = g.add_edge('z, 'x, 6)
-g.dijkstra('s)
-g.dijkstra('t)
-g.dijkstra('x)
-g.dijkstra('y)
-g.dijkstra('z)
+IO.puts "g => #{g}"
+IO.puts "g.dijkstra('s) => #{g.dijkstra('s)}"
+IO.puts "g.dijkstra('t) => #{g.dijkstra('t)}"
+IO.puts "g.dijkstra('x) => #{g.dijkstra('x)}"
+IO.puts "g.dijkstra('y) => #{g.dijkstra('y)}"
+IO.puts "g.dijkstra('z) => #{g.dijkstra('z)}"
