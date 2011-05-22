@@ -1,3 +1,5 @@
+Implementation of Dijkstra algorithm in Elixir.
+
 Usage:
 -- compilation --
 make c
