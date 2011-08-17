@@ -1,4 +1,4 @@
-g = Graph.new
+g = #Graph
 g = g.add_edge('s, 't, 10)
 g = g.add_edge('s, 'y, 5)
 g = g.add_edge('t, 'x, 1)
