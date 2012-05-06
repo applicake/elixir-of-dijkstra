@@ -1,106 +1,54 @@
-module Graph
-  attr_reader ['g, 'd, 'max_int]
-  
-  def __bound__
-    g = {} %% graph representation, adjacency list equivalent -- dictionary of dictionaries
-    d = {} %% distances
-    max_int = Erlang.bsl(1,32) %% maximal distance value -- local infinity 
-    
-    @('g: g, 'd: d, 'max_int: max_int)
+defmodule Graph do
+  def dijkstra(configuration, point) do
+    g = Dict.get(configuration, :g)
+    d = Dict.get(configuration, :d)
+
+    q = Keyword.keys(d)
+    d = Keyword.merge(d, [{point, 0}])
+    loopy(g, q, d)
   end
-  def setup
-    g = {'s: {'t: 10, 'y: 5}, 't: {'x: 1, 'y: 2}, 'x: {'z: 4}, 'y: {'t: 3, 'x: 9, 'z: 2}, 'z: {'s: 7, 'x: 6}}
-    d = {'s: 4294967296, 't: 4294967296, 'x: 4294967296, 'y: 4294967296, 'z: 4294967296}
-    max_int = 4294967296
-    @('g: g, 'd: d, 'max_int: max_int)
+
+  def extract_min([], _d, key) do
+    key
   end
-  
-  %% add_edge -- add edge to graph
-  def add_edge(s,t,w)
-    g = @g
-    d = @d
-    
-    if g[s] == nil
-      g = g.merge {s:{t:w}}
-    else
-      g = g.update s, _.merge {t:w}
+
+  def extract_min([h|t], d, key) do
+    if d[h] < d[key] do
+      extract_min(t, d, h)
+    else:
+      extract_min(t, d, key)
     end
-    if d[s] == nil
-      d = d.merge {s: @max_int}
-    end
-    if d[t] == nil
-      d = d.merge {t: @max_int}
-    end
-    @('g: g, 'd: d)
   end
-  
-  %% dijkstra -- execute dijkstra algorithm
-  def dijkstra(point)
-    d = @d
-    q = listf(d.to_list)
-    d = d.set(point, 0)
-    loop(q, d)
+
+  def extract_min(q, d) do
+    [f|_] = q
+    extract_min(q, d, f)
   end
-  
-%% private
-%% commented for tests
-    %% listf -- get list of first elements from list of pairs [{a,b}, {c,d}] -> [a,c]
-    def listf([])
-      []
+
+  def relax(_u, [], d) do
+    d
+  end
+
+  def relax(u, list, d) do
+    [{v, w} | t] = list
+    if d[v] > d[u] + w do
+      d = Keyword.merge(d, [{v, d[u] + w}])
     end
-    
-    def listf([a])
-      {first, _second} = a
-      [first]
+    relax(u, t, d)
+  end
+
+  def loopy(g, q, d) do
+    if length(q) > 0 do
+      d = inloop(g, q, d)
     end
-    
-    def listf([h|t])
-      {first, _second} = h
-      [first | listf(t)]
-    end
-    
-    %% extract_min -- extract element from list with the shortest distance
-    def extract_min([], _d, key)
-      key
-    end
-    
-    def extract_min([h|t], d, key)
-      if d[h] < d[key]
-        extract_min(t, d, h)
-      else
-        extract_min(t, d, key)
-      end
-    end
-    
-    def extract_min(q, d)
-      extract_min(q, d, q[0])
-    end
-    
-    %% relax -- relaxation
-    def relax(_u, [], d)
-      d
-    end
-    
-    def relax(u, list, d)
-      [{v, w} | t] = list
-      if d[v] > d[u] + w
-        d = d.set(v, d[u] + w)
-      end
-      relax(u, t, d)
-    end
-    
-    def inloop(q, d)
-      g = @g
-      u = extract_min(q, d)
-      q = q.delete(u)
-      d = relax(u, g[u].to_list, d)
-      loop(q, d)
-    end
-    
-    def loop(q, d)
-      if q.length > 0
-        d = inloop(q, d)
-      end
-      d
-    end
+    d
+  end
+
+  def inloop(g, q, d) do
+    u = extract_min(q, d)
+    q = List.delete(q, u)
+    d = relax(u, g[u], d)
+    d = loopy(g, q, d)
+  end
 end
+

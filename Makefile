@@ -1,7 +1,7 @@
 c:
-	rm -f *.beam
+	rm -rf __MAIN__
 	elixirc graph.ex
 t:
-	exunit graph_test.exs
+	elixir graph_test.exs
 clean:
-	rm -f *.beam
+	rm -rf __MAIN__
