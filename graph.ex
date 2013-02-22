@@ -15,7 +15,7 @@ defmodule Graph do
   def extract_min([h|t], d, key) do
     if d[h] < d[key] do
       extract_min(t, d, h)
-    else:
+    else
       extract_min(t, d, key)
     end
   end
